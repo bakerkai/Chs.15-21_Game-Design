@@ -17,14 +17,17 @@ SP = 4 # speed
 class Player(arcade.Sprite):
     def __init__(self):
         super().__init__("images/bb8.png", BB8_scale,)
+        self.laser_sound = arcade.load_sound("sounds/laser.mp3")
     def update(self):
         pass
 
 class Trooper(arcade.Sprite):
     def __init__(self):
         super().__init__("Images/stormtrooper.png", trooper_scale)
+        self.laser_sound = arcade.load_sound("sounds/laser.mp3")
         self.w = int(self.width)
         self.h = int(self.height)
+
     def update(self):
         pass
 
@@ -64,7 +67,17 @@ class MyGame(arcade.Window):
         arcade.draw_text(output,10,20,arcade.color.BLACK,14)
 
     def on_update(self, dt):
-        pass
+        self.player_list.update()
+        self.trooper_list.update()
+        trooper_hit_list = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
+        for trooper in trooper_hit_list:
+            trooper.kill()
+            self.score += 1
+            arcade.play_sound(self.BB8.laser_sound)
+        if self.score == trooper_count:
+            self.reset()
+
+
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
         self.BB8.center_x = x
         self.BB8.center_y = y
