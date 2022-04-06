@@ -5,6 +5,7 @@
 
 import random
 import arcade
+# import time
 
 # --- Constants ---
 BB8_scale = 0.3
@@ -13,6 +14,7 @@ trooper_count = 40
 SW = 800 # Screen width
 SH = 600 # Screen Height
 SP = 4 # speed
+
 
 class Player(arcade.Sprite):
     def __init__(self):
@@ -44,6 +46,9 @@ class MyGame(arcade.Window):
 
         # set the score
         self.score = 0
+
+        # set the time
+        # self.time = time.sleep(15)
 
         # set the player
         self.BB8 =  Player()
@@ -77,6 +82,15 @@ class MyGame(arcade.Window):
         if self.score == trooper_count:
             self.reset()
 
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.LEFT:
+            self.bluebox.dx = -6
+        elif key == arcade.key.RIGHT:
+            self.bluebox.dx = 6
+        elif key == arcade.key.UP:
+            self.bluebox.dy = 6
+        elif key == arcade.key.DOWN:
+            self.bluebox.dy = -6
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
         self.BB8.center_x = x
