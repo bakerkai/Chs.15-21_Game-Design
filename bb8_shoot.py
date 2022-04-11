@@ -14,23 +14,24 @@ trooper_count = 40
 SW = 800 # Screen width
 SH = 600 # Screen Height
 SP = 4 # speed
-
+t_speed = 2
+t_score = 5
+b_score = 2
+b_speed = 10
+bullet_scale = 1
 
 class Player(arcade.Sprite):
     def __init__(self):
         super().__init__("images/bb8.png", BB8_scale,)
         self.laser_sound = arcade.load_sound("sounds/laser.mp3")
+        self.explosion = arcade.load_sound("sounds/explosion.mp3")
     def update(self):
         self.center_x += self.change_x
-        self.center_y += self.change_y
         if self.left <= 0:
             self.left = 0
         if self.right >= SW:
             self.right = SW
-        if self.top > SH:
-            self.top = SH
-        if self.bottom < 0:
-            self.bottom = 0
+
 
 class Trooper(arcade.Sprite):
     def __init__(self):
@@ -40,18 +41,32 @@ class Trooper(arcade.Sprite):
         self.h = int(self.height)
 
     def update(self):
-        pass
+        self.center_y -= t_speed
+        if self.top < 0:
+            self.center_x = random.randrange(self.w, SW - self.w)
+            self.center_y = random.randrange(SH + self.h, SH*2)
+
+class Bullet(arcade.Sprite):
+    def __init__(self):
+        super().__init__("Images/bullet.png", bullet_scale)
+        self.laser_sound = arcade.load_sound("sounds/laser.mp3")
+
+    def update(self):
+        self.center_y += b_speed
+        if self.bottom > SH:
+            pass
 
 #------MyGame Class--------------
 class MyGame(arcade.Window):
 
     def __init__(self,SW,SH,title):
         super().__init__(SW, SH, title)
-        arcade.set_background_color(arcade.color.SKY_BLUE)
+        arcade.set_background_color(arcade.color.BLACK)
 
     def reset(self):
         self.player_list = arcade.SpriteList()
         self.trooper_list = arcade.SpriteList()
+        self.bullets = arcade.SpriteList()
 
         # set the score
         self.score = 0
@@ -62,7 +77,7 @@ class MyGame(arcade.Window):
         # set the player
         self.BB8 =  Player()
         self.BB8.center_x = SW/2
-        self.BB8.center_y = SH/2
+        self.BB8.bottom = 20
         self.player_list.append(self.BB8)
 
         # create the troopers
@@ -78,11 +93,12 @@ class MyGame(arcade.Window):
 
         # Draw the score on screen
         output = f"score: {self.score}"
-        arcade.draw_text(output,10,20,arcade.color.BLACK,14)
+        arcade.draw_text(output,SW - 80,SH - 20,arcade.color.NEON_CARROT, 14)
 
     def on_update(self, dt):
         self.player_list.update()
         self.trooper_list.update()
+        self.bullet_list.update()
         trooper_hit_list = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
         for trooper in trooper_hit_list:
             trooper.kill()
@@ -96,16 +112,18 @@ class MyGame(arcade.Window):
             self.BB8.change_x = -SP
         elif key == arcade.key.RIGHT:
             self.BB8.change_x = SP
-        elif key == arcade.key.UP:
-            self.BB8.change_y = SP
-        elif key == arcade.key.DOWN:
-            self.BB8.change_y = -SP
+        if key == arcade.key.SPACE:
+            self.bullet = Bullet()
+            self.bullet.center_x = self.BB8.center_x
+            self.bullet.center_y = self.BB8.top
+            self.bullets.append(self.bullet)
+            self.score -= b_score
+            arcade.play_sound(self.BB8.laser_sound)
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.RIGHT:
             self.BB8.change_x = 0
-        if key == arcade.key.UP or key == arcade.key.DOWN:
-            self.BB8.change_y = 0
+
 
 
     # def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
