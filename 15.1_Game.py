@@ -9,7 +9,7 @@ learn more in upcoming chapters. Below are some ideas that you could include:
 3.) Move the other sprites in some way like moving down the screen and then re-spawning above the window.
 4.) Use sounds when a sprite is killed or the player hits the sidewall.
 5.) See if you can reset the game after 30 seconds. Remember the on_update() method runs every 1/60th of a second.
-6.) Try some other creative ideas to make your game awesome. Perhaps collecting good sprites while avoiding bad sprites.
+6.) Try some other   creative ideas to make your game awesome. Perhaps collecting good sprites while avoiding bad sprites.
 7.) Keep score and use multiple levels. How do you keep track of an all time high score?
 8.) Make a two player game.
 
