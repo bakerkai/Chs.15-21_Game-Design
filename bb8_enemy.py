@@ -10,7 +10,7 @@ import arcade
 # --- Constants ---
 BB8_scale = 0.3
 trooper_scale = 0.1
-trooper_count = 400
+trooper_count = 40
 SW = 800 # Screen width
 SH = 600 # Screen Height
 SP = 4 # speed
@@ -19,10 +19,25 @@ t_score = 5
 b_score = 2
 b_speed = 10
 bullet_scale = 1
+EXPLOSION_TEXTURE_COUNT = 50
+
+class Explosion(arcade.Sprite):
+    def __init__(self, texture_list):
+        super().__init__("Images/explosions/explosion0000.png", BB8_scale,)
+        self.current_texture = 0
+        self.textures = texture_list
+        self.explosion = arcade.load_sound("sounds/explosion.mp3")
+    def update(self):
+        self.current_texture += 1
+        if self.current_texture < len(self.textures):
+            self.set_texture(self.current_texture)
+        else:
+            self.kill()
+
 
 class Player(arcade.Sprite):
     def __init__(self):
-        super().__init__("images/bb8.png", BB8_scale,)
+        super().__init__("Images/bb8.png", BB8_scale,)
         self.laser_sound = arcade.load_sound("sounds/laser.mp3")
         self.explosion = arcade.load_sound("sounds/explosion.mp3")
     def update(self):
@@ -75,12 +90,18 @@ class MyGame(arcade.Window):
     def __init__(self,SW,SH,title):
         super().__init__(SW, SH, title)
         arcade.set_background_color(arcade.color.BLACK)
+        self.set_mouse_visible(False)
+        self.explosion_texture_list = []
+        for i in range(EXPLOSION_TEXTURE_COUNT):
+            texture_name = f"Images/explosions/explosion{i:04}.png"
+            self.explosion_texture_list.append(arcade.load_texture(texture_name))
 
     def reset(self):
         self.player_list = arcade.SpriteList()
         self.trooper_list = arcade.SpriteList()
         self.bullet_list = arcade.SpriteList()
         self.ebullets = arcade.SpriteList()
+        self.explosions = arcade.SpriteList()
 
         # set the score
         self.score = 0
@@ -109,6 +130,8 @@ class MyGame(arcade.Window):
         self.player_list.draw()
         self.bullet_list.draw()
         self.ebullets.draw()
+        self.explosions.draw()
+
         # Draw the score on screen
         output = f"score: {self.score}"
         arcade.draw_text(output,SW - 80,SH - 20,arcade.color.NEON_CARROT, 14)
@@ -133,7 +156,7 @@ class MyGame(arcade.Window):
 
         # randomly drop bombs
         for trooper in self.trooper_list:
-            if random.randrange(800) == 0:
+            if random.randrange(2000) == 0:
                 ebullet = Enemy_Bullet()
                 ebullet.center_x = trooper.center_x
                 ebullet.top = trooper.bottom
@@ -154,9 +177,14 @@ class MyGame(arcade.Window):
             hit_list = arcade.check_for_collision_with_list(bullet, self.trooper_list)
             arcade.check_for_collision_with_list(bullet, self.trooper_list)
             if len(hit_list) > 0:
-                arcade.play_sound(self.bullet.explosion)
+                arcade.play_sound(self.bullet.explosion) # possibly move to label 65 function
                 bullet.kill()
-            for trooper in hit_list:
+                explosion = Explosion(self.explosion_texture_list)
+                explosion.center_x = hit_list[0].center_x
+                explosion.center_y = hit_list[0].center_y
+                self.explosions.append(explosion)
+
+            for trooper in hit_list: # label 65
                 trooper.kill()
                 self.score += t_score
 
