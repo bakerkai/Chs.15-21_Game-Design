@@ -91,6 +91,8 @@ class MyGame(arcade.Window):
         super().__init__(SW, SH, title)
         arcade.set_background_color(arcade.color.BLACK)
         self.set_mouse_visible(False)
+
+
         self.explosion_texture_list = []
         for i in range(EXPLOSION_TEXTURE_COUNT):
             texture_name = f"Images/explosions/explosion{i:04}.png"
@@ -146,6 +148,7 @@ class MyGame(arcade.Window):
         self.trooper_list.update()
         self.bullet_list.update()
         self.ebullets.update()
+        self.explosions.update()
         BB8_hit = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
         # trooper_hit_list = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
 
