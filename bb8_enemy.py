@@ -15,6 +15,13 @@ SW = 800 # Screen width
 SH = 600 # Screen Height
 SP = 4 # speed
 t_speed = 2
+levels = 3
+'''
+level 0 = instructions
+level 1 = level 1
+level 2 = level 2
+level 4 = gameover screen
+'''
 t_score = 5
 b_score = 2
 b_speed = 10
@@ -23,7 +30,7 @@ EXPLOSION_TEXTURE_COUNT = 50
 
 class Explosion(arcade.Sprite):
     def __init__(self, texture_list):
-        super().__init__("Images/explosions/explosion0000.png", BB8_scale,)
+        super().__init__("Images/explosions/explosion0000.png", 1,)
         self.current_texture = 0
         self.textures = texture_list
         self.explosion = arcade.load_sound("sounds/explosion.mp3")
@@ -91,7 +98,8 @@ class MyGame(arcade.Window):
         super().__init__(SW, SH, title)
         arcade.set_background_color(arcade.color.BLACK)
         self.set_mouse_visible(False)
-
+        self.current_state = 0
+        self.gameover = True
 
         self.explosion_texture_list = []
         for i in range(EXPLOSION_TEXTURE_COUNT):
@@ -99,6 +107,10 @@ class MyGame(arcade.Window):
             self.explosion_texture_list.append(arcade.load_texture(texture_name))
 
     def reset(self):
+        if self.current_state in range(1, levels + 1):
+            self.background = arcade.load_texture(f"Images/sky{self.current_state}.png")
+
+        #Create sprite lists
         self.player_list = arcade.SpriteList()
         self.trooper_list = arcade.SpriteList()
         self.bullet_list = arcade.SpriteList()
@@ -106,8 +118,8 @@ class MyGame(arcade.Window):
         self.explosions = arcade.SpriteList()
 
         # set the score
-        self.score = 0
-        self.Gameover = False
+        # self.score = 0
+        # self.Gameover = False
 
         # set the time
         # self.time = time.sleep(15)
@@ -128,76 +140,95 @@ class MyGame(arcade.Window):
 
     def on_draw(self):
         arcade.start_render()
-        self.trooper_list.draw()
-        self.player_list.draw()
-        self.bullet_list.draw()
-        self.ebullets.draw()
-        self.explosions.draw()
+        if self.current_state == 0:
+            arcade.draw_rectangle_filled(SW // 2, SH // 2, SW, SH, arcade.color.BLACK)
+            arcade.draw_text("Use arrow keys to move BB8 and SPACE to fire. Choose your level.", SW //2, SH // 2, arcade.color.PISTACHIO, align="center", anchor_x= "center")
 
-        # Draw the score on screen
-        output = f"score: {self.score}"
-        arcade.draw_text(output,SW - 80,SH - 20,arcade.color.NEON_CARROT, 14)
+        elif not self.Gameover:
+            arcade.draw_texture_rectangle(SW // 2, SH //2, SW, SH, self.background)
+            self.trooper_list.draw()
+            self.player_list.draw()
+            self.bullet_list.draw()
+            self.ebullets.draw()
+            self.explosions.draw()
+            # Draw the score on screen
+            output = f"score: {self.score}"
+            level = f"level: {self.current_state}"
+            arcade.draw_rectangle_filled(SW - 40, SH - 20, 80, 40, arcade.color.BLACK)
+            arcade.draw_text(output,SW - 80,SH - 40, ((0,255,0)), 14)
+            arcade.draw_text(level,SW - 80,SH - 20,((0,255,0)), 14)
+
+        else:
         # Draw gameoverscreen
-        if self.Gameover:
             arcade.draw_rectangle_filled(SW / 2, SH / 2, SW, SH, arcade.color.BLACK)
-            arcade.draw_text("Game Over: Press R to Play Again", SW / 2, SH / 2, arcade.color.NEON_GREEN, 14, align= "center", anchor_x= "center")
+            arcade.draw_text("Game Over: Press I for instructions or a level number.", SW / 2, SH / 2, arcade.color.NEON_GREEN, 14, align= "center", anchor_x= "center")
 
 
     def on_update(self, dt):
-        self.player_list.update()
-        self.trooper_list.update()
-        self.bullet_list.update()
-        self.ebullets.update()
-        self.explosions.update()
-        BB8_hit = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
-        # trooper_hit_list = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
-
-        if len(BB8_hit) > 0 and not self.Gameover:
-            self.BB8.kill()
-            arcade.play_sound(self.BB8.explosion)
+        if self.current_state in range(1, levels + 1):
+            self.Gameover = False
+        else:
             self.Gameover = True
 
-        # randomly drop bombs
-        for trooper in self.trooper_list:
-            if random.randrange(2000) == 0:
-                ebullet = Enemy_Bullet()
-                ebullet.center_x = trooper.center_x
-                ebullet.top = trooper.bottom
-                self.ebullets.append(ebullet)
+        if not self.Gameover:
 
-        # check if bb8 hit
+            self.player_list.update()
+            self.trooper_list.update()
+            self.bullet_list.update()
+            self.ebullets.update()
+            self.explosions.update()
+            BB8_hit = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
+            # trooper_hit_list = arcade.check_for_collision_with_list(self.BB8, self.trooper_list)
+            if len(self.trooper_list) == 0:
+                self.current_state += 1
+                self.reset()
 
-        BB8_bombed = arcade.check_for_collision_with_list(self.BB8, self.ebullets)
-        if len(BB8_bombed) > 0 and not self.Gameover:
-            self.BB8.kill()
-            arcade.play_sound(self.BB8.explosion)
-            self.Gameover = True
 
-        if len(self.trooper_list) == 0:
-            self.Gameover = True
+            if len(BB8_hit) > 0 and not self.Gameover:
+                self.BB8.kill()
+                arcade.play_sound(self.BB8.explosion)
+                self.current_state = levels + 1
 
-        for bullet in self.bullet_list:
-            hit_list = arcade.check_for_collision_with_list(bullet, self.trooper_list)
-            arcade.check_for_collision_with_list(bullet, self.trooper_list)
-            if len(hit_list) > 0:
-                arcade.play_sound(self.bullet.explosion) # possibly move to label 65 function
-                bullet.kill()
-                explosion = Explosion(self.explosion_texture_list)
-                explosion.center_x = hit_list[0].center_x
-                explosion.center_y = hit_list[0].center_y
-                self.explosions.append(explosion)
+            # randomly drop bombs
+            for trooper in self.trooper_list:
+                if random.randrange(2000) == 0:
+                    ebullet = Enemy_Bullet()
+                    ebullet.center_x = trooper.center_x
+                    ebullet.top = trooper.bottom
+                    self.ebullets.append(ebullet)
 
-            for trooper in hit_list: # label 65
-                trooper.kill()
-                self.score += t_score
+            # check if bb8 hit
 
-        if len(BB8_hit)>0 and not self.Gameover:
-            self.BB8.kill()
-            arcade.play_sound(self.BB8.explosion)
-            self.Gameover = True
+            BB8_bombed = arcade.check_for_collision_with_list(self.BB8, self.ebullets)
+            if len(BB8_bombed) > 0 and not self.Gameover:
+                self.BB8.kill()
+                arcade.play_sound(self.BB8.explosion)
+                self.current_state = levels + 1
+            if len(self.trooper_list) == 0:
+                self.Gameover = True
 
-        if self.score == trooper_count:
-            self.reset()
+            for bullet in self.bullet_list:
+                hit_list = arcade.check_for_collision_with_list(bullet, self.trooper_list)
+                arcade.check_for_collision_with_list(bullet, self.trooper_list)
+                if len(hit_list) > 0:
+                    arcade.play_sound(self.bullet.explosion) # possibly move to label 65 function
+                    bullet.kill()
+                    explosion = Explosion(self.explosion_texture_list)
+                    explosion.center_x = hit_list[0].center_x
+                    explosion.center_y = hit_list[0].center_y
+                    self.explosions.append(explosion)
+
+                for trooper in hit_list: # label 65
+                    trooper.kill()
+                    self.score += t_score
+
+            if len(BB8_hit)>0 and not self.Gameover:
+                self.BB8.kill()
+                arcade.play_sound(self.BB8.explosion)
+                self.Gameover = True
+
+            if self.score == trooper_count:
+                self.reset()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.LEFT:
@@ -214,6 +245,20 @@ class MyGame(arcade.Window):
             self.bullet_list.append(self.bullet)
             self.score -= b_score
             arcade.play_sound(self.BB8.laser_sound)
+        if key == arcade.key.I and self.Gameover:
+            self.current_state = 0
+        elif key == arcade.key.KEY_1 and self.Gameover:
+            self.current_state = 1
+            self.score = 0
+            self.reset()
+        elif key == arcade.key.KEY_2 and self.Gameover:
+            self.current_state = 2
+            self.score = 0
+            self.reset()
+        elif key == arcade.key.KEY_3 and self.Gameover:
+            self.current_state = 3
+            self.score = 0
+            self.reset()
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.RIGHT:
