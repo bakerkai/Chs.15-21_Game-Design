@@ -75,36 +75,56 @@ class Trooper(arcade.Sprite):
         self.laser_sound = arcade.load_sound("sounds/laser.mp3")
         self.w = int(self.width)
         self.h = int(self.height)
+        self.dx = random.randrange(-1,2,2) # !!!!!
+        self.dy = random.randrange(-1,2,2)
 
     def update(self):
-        self.center_y -= t_speed
-        if self.top < 0:
-            self.center_x = random.randrange(self.w, SW - self.w)
-            self.center_y = random.randrange(SH + self.h, SH*2)
+        self.center_y += self.dy
+        self.center_x += self.dx
+
+        if self.top < SH or self.bottom <0:
+            self.dy  += -1
+        if self.left < 0 or self.right > SW:
+            self.dx *= -1
 
 class Bullet(arcade.Sprite):
     def __init__(self):
         super().__init__("Images/bullet.png", bullet_scale)
         self.laser_sound = arcade.load_sound("sounds/laser.mp3")
         self.explosion = arcade.load_sound("sounds/explosion.mp3")
+        self.speed = 0
 
     def update(self):
-        self.center_y += b_speed
-        if self.bottom > SH:
-            pass
+        angle_shoot = math.radians(self.angle - 90)
+        self.center_x -= self.speed * math.sin(angle_shoot)
+        self.center_y += self.speed * math.cos(angle_shoot)
+
+        if self.bottom > SH or self.top < 0 or self.right < 0 or self.left > SW:
+            self.kill()
 
 class Enemy_Bullet(arcade.Sprite):
     def __init__(self):
         super().__init__("Images/rbullet.png", bullet_scale)
         self.laser_sound = arcade.load_sound("sounds/laser.mp3")
         self.explosion = arcade.load_sound("sounds/explosion.mp3")
+        self.angle_list = [0, 90, 180, 270]
+        self.angle = random.choice(self.angle_list)
+
+
+
 
     def update(self):
-        self.center_y -= b_speed
-        self.angle = -90
-        if self.top < 0:
-            self.kill()
+        if self.angle == 0:
+            self.center_x += b_speed
+        elif self.angle == 90:
+            self.center_y += b_speed
+        elif self.angle == 180:
+            self.center_y -= b_speed
+        elif self.angle == 270:
+            self.center_y -= b_speed
 
+        if self.bottom > SH or self.top < 0 or self.right < 0 or self.left > SW:
+            self.kill()
 #------MyGame Class--------------
 class MyGame(arcade.Window):
 
@@ -141,14 +161,17 @@ class MyGame(arcade.Window):
         # set the player
         self.BB8 =  Player()
         self.BB8.center_x = SW/2
-        self.BB8.bottom = 20
+        self.BB8.center_y = SH/2
         self.player_list.append(self.BB8)
 
         # create the troopers
         for i in range(trooper_count):
             trooper = Trooper()
-            trooper.center_x = random.randrange(trooper.w,SW-trooper.w)
-            trooper.center_y = random.randrange(SH // 2, SH * 2)
+            if i%2 == 0:
+                trooper.center_x = random.randrange(trooper.w, int(SW - SW / 3))
+            else:
+                trooper.center_x = random.randrange(int(SW * 2/3), SW - trooper.w)
+            trooper.center_y = random.randrange(trooper.h, SH - trooper.h)
             self.trooper_list.append(trooper)
 
 
@@ -185,7 +208,6 @@ class MyGame(arcade.Window):
             self.Gameover = True
 
         if not self.Gameover:
-
             self.player_list.update()
             self.trooper_list.update()
             self.bullet_list.update()
@@ -203,16 +225,16 @@ class MyGame(arcade.Window):
                 arcade.play_sound(self.BB8.explosion)
                 self.current_state = levels + 1
 
-            # randomly drop bombs
+            # randomly shooting bullets
             for trooper in self.trooper_list:
-                if random.randrange(2000) == 0:
+                if random.randrange(1000) == 0:
                     ebullet = Enemy_Bullet()
                     ebullet.center_x = trooper.center_x
+                    ebullet.center_y = trooper.center_y
                     ebullet.top = trooper.bottom
                     self.ebullets.append(ebullet)
 
             # check if bb8 hit
-
             BB8_bombed = arcade.check_for_collision_with_list(self.BB8, self.ebullets)
             if len(BB8_bombed) > 0 and not self.Gameover:
                 self.BB8.kill()
