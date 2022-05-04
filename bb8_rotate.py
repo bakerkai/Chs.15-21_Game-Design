@@ -11,7 +11,7 @@ import math
 # --- Constants ---
 BB8_scale = 0.3
 trooper_scale = 0.1
-trooper_count = 40
+trooper_count = 10
 SW = 800 # Screen width
 SH = 600 # Screen Height
 SP = 4 # speed
@@ -82,8 +82,8 @@ class Trooper(arcade.Sprite):
         self.center_y += self.dy
         self.center_x += self.dx
 
-        if self.top < SH or self.bottom <0:
-            self.dy  += -1
+        if self.bottom <0 or self.top >SH:
+            self.dy  *= -1
         if self.left < 0 or self.right > SW:
             self.dx *= -1
 
@@ -110,21 +110,19 @@ class Enemy_Bullet(arcade.Sprite):
         self.angle_list = [0, 90, 180, 270]
         self.angle = random.choice(self.angle_list)
 
-
-
-
     def update(self):
         if self.angle == 0:
             self.center_x += b_speed
         elif self.angle == 90:
             self.center_y += b_speed
         elif self.angle == 180:
-            self.center_y -= b_speed
+            self.center_x -= b_speed
         elif self.angle == 270:
             self.center_y -= b_speed
 
         if self.bottom > SH or self.top < 0 or self.right < 0 or self.left > SW:
             self.kill()
+
 #------MyGame Class--------------
 class MyGame(arcade.Window):
 

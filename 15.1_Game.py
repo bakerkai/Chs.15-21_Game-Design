@@ -70,16 +70,16 @@ class Player(arcade.Sprite):
         self.explosion = arcade.load_sound("sounds/explosion.mp3")
 
     def update(self):
-        self.center_x += self.change_x
-        if self.left <= 0:
-            self.left = 0
-        if self.right >= SW:
-            self.right = SW
+        self.center_y += self.change_y
+        if self.bottom <= 0:
+            self.bottom = 0
+        if self.top >= SH:
+            self.top = SH
 
 
 class Trooper(arcade.Sprite):
     def __init__(self):
-        super().__init__("Images/stormtrooper.png", trooper_scale)
+        super().__init__("Images/tree.jpeg", trooper_scale)
         self.laser_sound = arcade.load_sound("sounds/laser.mp3")
         self.w = int(self.width)
         self.h = int(self.height)
@@ -151,7 +151,7 @@ class MyGame(arcade.Window):
 
         # set the player
         self.BB8 = Player()
-        self.BB8.center_x = SW / 2
+        self.BB8.center_x = 15
         self.BB8.bottom = 20
         self.player_list.append(self.BB8)
 
@@ -218,7 +218,7 @@ class MyGame(arcade.Window):
                 if random.randrange(2000) == 0:
                     ebullet = Enemy_Bullet()
                     ebullet.center_x = trooper.center_x
-                    ebullet.top = trooper.bottom
+                    ebullet.top = trooper.left
                     self.ebullets.append(ebullet)
 
             # check if bb8 hit
@@ -255,10 +255,10 @@ class MyGame(arcade.Window):
                 self.reset()
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.LEFT:
-            self.BB8.change_x = -SP
-        elif key == arcade.key.RIGHT:
-            self.BB8.change_x = SP
+        if key == arcade.key.UP:
+            self.BB8.change_y = +SP
+        elif key == arcade.key.DOWN:
+            self.BB8.change_y = -SP
         elif key == arcade.key.R and self.Gameover:
             self.reset()
         elif key == arcade.key.SPACE and not self.Gameover:
@@ -285,8 +285,8 @@ class MyGame(arcade.Window):
             self.reset()
 
     def on_key_release(self, key, modifiers):
-        if key == arcade.key.LEFT or key == arcade.key.RIGHT:
-            self.BB8.change_x = 0
+        if key == arcade.key.UP or key == arcade.key.DOWN:
+            self.BB8.change_y = 0
 
     # def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
     #     self.BB8.center_x = x
