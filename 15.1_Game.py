@@ -88,6 +88,7 @@ class Player(arcade.Sprite):
 class Trooper(arcade.Sprite):
     def __init__(self):
         super().__init__("Images/tank_bigRed.png", trooper_scale)
+        self.tanklist = [arcade.load_texture("Images/tank_green.png"), arcade.load_texture("Images/tank_darkLarge.png")]
         self.laser_sound = arcade.load_sound("sounds/laser.mp3")
         self.w = int(self.width)
         self.h = int(self.height)
