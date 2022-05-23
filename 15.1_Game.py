@@ -145,7 +145,7 @@ class MyGame(arcade.Window):
 
     def __init__(self,SW,SH,title):
         super().__init__(SW, SH, title)
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.BLACK) # chaning for some reason changes the background texture
         self.set_mouse_visible(False)
         self.current_state = 0
         self.gameover = True
@@ -158,7 +158,7 @@ class MyGame(arcade.Window):
     def reset(self):
         if self.current_state in range(1, levels + 1):
             self.background = arcade.load_texture(f"Images/sky{self.current_state}.png")
-
+        print("Game reset")
         #Create sprite lists
         self.player_list = arcade.SpriteList()
         self.trooper_list = arcade.SpriteList()
@@ -190,14 +190,15 @@ class MyGame(arcade.Window):
             self.trooper_list.append(trooper)
 
 
+
     def on_draw(self):
         arcade.start_render()
         if self.current_state == 0:
             arcade.draw_rectangle_filled(SW // 2, SH // 2, SW, SH, arcade.color.BLACK)
-            arcade.draw_text("Use arrow keys to move BB8 and SPACE to fire. Choose your level.", SW //2, SH // 2, arcade.color.NEON_GREEN, align="center", anchor_x= "center")
+            arcade.draw_text("Use arrow keys to move BB8 and SPACE to fire. Choose your level. 1 2 3", SW //2, SH // 2, arcade.color.NEON_GREEN, align="center", anchor_x= "center")
 
         elif not self.Gameover:
-            arcade.draw_texture_rectangle(SW // 2, SH //2, SW, SH, self.background)
+            #arcade.draw_texture_rectangle(SW // 2, SH //2, SW, SH, self.background)
             self.trooper_list.draw()
             self.player_list.draw()
             self.bullet_list.draw()
@@ -280,6 +281,9 @@ class MyGame(arcade.Window):
 
             if self.score == trooper_count:
                 self.reset()
+
+            if self.score <= -30:
+                print("Stop spamming, you're taking up too much ram")
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.LEFT:
